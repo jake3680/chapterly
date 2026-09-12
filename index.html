@@ -6,16 +6,26 @@
 <title>Chapterly — Turn book chapters into study notes</title>
 <meta name="description" content="Paste or upload any book chapter and instantly get structured, source-grounded study notes, flashcards and quizzes. Runs 100% in your browser — no signup, no upload to any server.">
 <meta name="theme-color" content="#4f46e5">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📘</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><defs><linearGradient id=%22g%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22><stop offset=%220%22 stop-color=%22%2338bdf8%22/><stop offset=%2250%22 stop-color=%22%23a855f7%22/><stop offset=%22100%22 stop-color=%22%23fb7185%22/></linearGradient></defs><rect width=%22100%22 height=%22100%22 rx=%2224%22 fill=%22url(%23g)%22/><text x=%2250%22 y=%2268%22 font-size=%2252%22 font-weight=%22800%22 font-family=%22Arial%22 fill=%22white%22 text-anchor=%22middle%22>C</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
+
+<!-- ambient liquid-gradient scene behind the glass panels -->
+<div class="bg-scene" aria-hidden="true">
+  <div class="bg-blob bg-blob-1"></div>
+  <div class="bg-blob bg-blob-2"></div>
+  <div class="bg-blob bg-blob-3"></div>
+</div>
 
 <header class="topbar">
   <div class="topbar-left">
     <button id="btn-sidebar" class="icon-btn only-mobile" title="Library" aria-label="Toggle library">☰</button>
     <a class="brand" href="#" id="brand">
-      <span class="brand-logo">📘</span>
+      <span class="brand-logo">C</span>
       <span class="brand-name">Chapterly</span>
     </a>
     <span class="brand-tag hide-mobile">chapters → notes, instantly</span>
@@ -44,13 +54,19 @@
   <main id="main">
     <!-- ============ HOME / NEW NOTE VIEW ============ -->
     <section id="view-home">
-      <div class="hero">
-        <h1>Turn any chapter into <span class="grad-text">exam-ready notes</span></h1>
-        <p class="hero-sub">Paste or upload a book chapter and get structured notes, flashcards and a quiz — grounded in your text, never invented. No signup. No paywall. Nothing leaves your browser.</p>
-        <div class="hero-fixes">
-          <div class="fix-chip" title="Notes cite only sentences that exist in your text; anything unverifiable is flagged">✅ Source-grounded, hallucination-flagged</div>
-          <div class="fix-chip" title="Long chapters are chunked and merged — the end is never cut off">📏 No truncation on long chapters</div>
-          <div class="fix-chip" title="Notes are fully editable, autosaved and exportable">✍️ Editable &amp; autosaved</div>
+      <div class="hero-canvas">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+        <div class="blob blob-4"></div>
+        <div class="hero">
+          <h1>Turn any chapter into <span class="grad-text">exam-ready notes</span></h1>
+          <p class="hero-sub">Paste or upload a book chapter and get structured notes, flashcards and a quiz — grounded in your text, never invented. No signup. No paywall. Nothing leaves your browser.</p>
+          <div class="hero-fixes">
+            <div class="fix-chip" title="Notes cite only sentences that exist in your text; anything unverifiable is flagged">✅ Source-grounded, hallucination-flagged</div>
+            <div class="fix-chip" title="Long chapters are chunked and merged — the end is never cut off">📏 No truncation on long chapters</div>
+            <div class="fix-chip" title="Notes are fully editable, autosaved and exportable">✍️ Editable &amp; autosaved</div>
+          </div>
         </div>
       </div>
 
