@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chapterly — Turn book chapters into study notes</title>
+<meta name="description" content="Paste or upload any book chapter and instantly get structured, source-grounded study notes, flashcards and quizzes. Runs 100% in your browser — no signup, no upload to any server.">
+<meta name="theme-color" content="#4f46e5">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📘</text></svg>">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <button id="btn-sidebar" class="icon-btn only-mobile" title="Library" aria-label="Toggle library">☰</button>
+    <a class="brand" href="#" id="brand">
+      <span class="brand-logo">📘</span>
+      <span class="brand-name">Chapterly</span>
+    </a>
+    <span class="brand-tag hide-mobile">chapters → notes, instantly</span>
+  </div>
+  <div class="topbar-right">
+    <span id="privacy-badge" class="privacy-badge hide-mobile" title="The Instant engine works entirely offline. Your text never leaves this page.">● runs in your browser</span>
+    <button id="btn-theme" class="icon-btn" title="Toggle light/dark theme">🌙</button>
+    <button id="btn-settings" class="icon-btn" title="Settings">⚙️</button>
+  </div>
+</header>
+
+<div id="app">
+  <div id="sidebar-scrim" hidden></div>
+  <aside id="sidebar" aria-label="Library">
+    <div class="sidebar-head">
+      <h2>Library</h2>
+      <button id="btn-new-doc" class="btn btn-primary btn-sm">＋ New notes</button>
+    </div>
+    <input id="doc-search" type="search" placeholder="Search your notes…" autocomplete="off">
+    <nav id="doc-list" class="doc-list"></nav>
+    <div class="sidebar-foot">
+      <span id="sidebar-stats">Saved locally in this browser</span>
+    </div>
+  </aside>
+
+  <main id="main">
+    <!-- ============ HOME / NEW NOTE VIEW ============ -->
+    <section id="view-home">
+      <div class="hero">
+        <h1>Turn any chapter into <span class="grad-text">exam-ready notes</span></h1>
+        <p class="hero-sub">Paste or upload a book chapter and get structured notes, flashcards and a quiz — grounded in your text, never invented. No signup. No paywall. Nothing leaves your browser.</p>
+        <div class="hero-fixes">
+          <div class="fix-chip" title="Notes cite only sentences that exist in your text; anything unverifiable is flagged">✅ Source-grounded, hallucination-flagged</div>
+          <div class="fix-chip" title="Long chapters are chunked and merged — the end is never cut off">📏 No truncation on long chapters</div>
+          <div class="fix-chip" title="Notes are fully editable, autosaved and exportable">✍️ Editable &amp; autosaved</div>
+        </div>
+      </div>
+
+      <div class="card input-card">
+        <div class="input-tabs" role="tablist">
+          <button class="input-tab active" data-home-tab="paste" role="tab">📋 Paste text</button>
+          <button class="input-tab" data-home-tab="upload" role="tab">📄 Upload file</button>
+          <button class="input-tab" data-home-tab="samples" role="tab">✨ Try a sample</button>
+        </div>
+
+        <div id="home-panel-paste" class="input-panel">
+          <input id="input-title" type="text" placeholder="Chapter title (optional — we'll detect it)" autocomplete="off">
+          <textarea id="input-text" rows="10" placeholder="Paste the full chapter here. Tips: keep the chapter's headings — they become the note sections. Use the samples tab if you just want to see it work."></textarea>
+          <div id="input-stats" class="input-stats">0 words</div>
+        </div>
+
+        <div id="home-panel-upload" class="input-panel" hidden>
+          <div id="dropzone" class="dropzone" tabindex="0" role="button" aria-label="Choose or drop a file">
+            <div class="dz-icon">📄</div>
+            <div class="dz-text"><strong>Drop a file</strong> or click to browse</div>
+            <div class="dz-hint">.txt · .md · .pdf · .docx — text is extracted in your browser, the file is never uploaded anywhere</div>
+          </div>
+          <input id="file-input" type="file" accept=".txt,.md,.markdown,.pdf,.docx,text/plain,text/markdown,application/pdf" hidden>
+          <div id="upload-status" class="upload-status" hidden></div>
+        </div>
+
+        <div id="home-panel-samples" class="input-panel" hidden>
+          <div id="samples-list" class="samples-list"></div>
+        </div>
+
+        <div class="gen-row">
+          <label class="gen-field">
+            <span>Depth</span>
+            <select id="opt-depth">
+              <option value="quick">⚡ Quick skim</option>
+              <option value="standard" selected>📗 Standard</option>
+              <option value="deep">🔎 Deep dive</option>
+            </select>
+          </label>
+          <label class="gen-field gen-grow">
+            <span>Focus <em class="opt-optional">(optional)</em></span>
+            <input id="opt-focus" type="text" placeholder="e.g. definitions and dates for the exam">
+          </label>
+          <label class="gen-field">
+            <span>Engine</span>
+            <select id="opt-engine">
+              <option value="instant" selected>⚡ Instant (offline)</option>
+              <option value="ai">🤖 AI model (your key)</option>
+            </select>
+          </label>
+          <button id="btn-generate" class="btn btn-primary btn-lg">Generate notes →</button>
+        </div>
+        <div id="home-error" class="form-error" hidden></div>
+      </div>
+
+      <div class="home-cols">
+        <div class="home-col">
+          <div class="hc-icon">📝</div>
+          <h3>Structured notes</h3>
+          <p>TL;DR, key-concept table, section-by-section details, facts &amp; figures, and self-check questions — in your chapter's own words.</p>
+        </div>
+        <div class="home-col">
+          <div class="hc-icon">🃏</div>
+          <h3>Flashcards &amp; quiz</h3>
+          <p>Auto-built from the notes: definition cards, cloze cards, and multiple-choice questions with explanations for wrong answers.</p>
+        </div>
+        <div class="home-col">
+          <div class="hc-icon">🛡️</div>
+          <h3>Integrity check</h3>
+          <p>Every sentence in the notes is matched against your source. Unsupported claims get flagged, so you always know what's verbatim.</p>
+        </div>
+        <div class="home-col">
+          <div class="hc-icon">📤</div>
+          <h3>Yours to keep</h3>
+          <p>Edit anything, export Markdown, print to PDF, export Anki-ready CSV. Everything autosaves in your browser — no account, ever.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ WORKSPACE VIEW ============ -->
+    <section id="view-doc" hidden>
+      <div class="doc-head">
+        <div class="doc-head-main">
+          <input id="doc-title" class="doc-title-input" title="Click to rename" autocomplete="off">
+          <div id="doc-meta" class="doc-meta"></div>
+        </div>
+        <div class="doc-actions no-print">
+          <label class="gen-field gen-mini">
+            <span>Depth</span>
+            <select id="doc-depth">
+              <option value="quick">⚡ Quick</option>
+              <option value="standard">📗 Standard</option>
+              <option value="deep">🔎 Deep</option>
+            </select>
+          </label>
+          <button id="btn-regenerate" class="btn">↻ Regenerate</button>
+          <div class="menu-wrap">
+            <button id="btn-export" class="btn">⬇ Export</button>
+            <div id="export-menu" class="menu" hidden>
+              <button id="btn-copy-md" class="menu-item">📋 Copy notes as Markdown</button>
+              <button id="btn-dl-md" class="menu-item">💾 Download .md file</button>
+              <button id="btn-dl-csv" class="menu-item">🃏 Export flashcards (.csv for Anki)</button>
+              <button id="btn-print" class="menu-item">🖨️ Print / Save as PDF</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <nav class="tabs no-print" role="tablist">
+        <button class="tab active" data-tab="notes" role="tab">📝 Notes</button>
+        <button class="tab" data-tab="cards" role="tab">🃏 Flashcards <span id="count-cards" class="tab-count"></span></button>
+        <button class="tab" data-tab="quiz" role="tab">❓ Quiz <span id="count-quiz" class="tab-count"></span></button>
+        <button class="tab" data-tab="source" role="tab">📖 Source</button>
+      </nav>
+
+      <!-- Notes panel -->
+      <div id="panel-notes" class="tab-panel">
+        <div class="notes-toolbar no-print">
+          <button id="btn-edit-notes" class="btn btn-sm">✏️ Edit</button>
+          <label class="chk" title="Highlight sentences that could not be matched to the source text">
+            <input type="checkbox" id="chk-flag" checked>
+            Flag unverified claims
+          </label>
+          <span id="edit-hint" class="toolbar-hint" hidden>Editing — changes autosave · integrity re-checks live</span>
+        </div>
+        <div id="notes-editor-wrap" hidden>
+          <textarea id="notes-editor" spellcheck="false" placeholder="Edit your notes in Markdown…"></textarea>
+          <div class="editor-foot">
+            <span>Markdown supported — changes autosave</span>
+            <button id="btn-edit-done" class="btn btn-sm btn-primary">✓ Done editing</button>
+          </div>
+        </div>
+        <article id="notes-body" class="md-body print-area"></article>
+      </div>
+
+      <!-- Flashcards panel -->
+      <div id="panel-cards" class="tab-panel" hidden>
+        <div id="cards-empty" class="empty-state" hidden>
+          <div class="es-icon">🃏</div>
+          <p>No flashcards yet.</p>
+          <button id="btn-rebuild-cards" class="btn btn-primary">Build flashcards from notes</button>
+        </div>
+        <div id="cards-ui">
+          <div class="cards-toolbar no-print">
+            <span id="cards-progress" class="toolbar-hint"></span>
+            <span class="spacer"></span>
+            <button id="btn-shuffle-cards" class="btn btn-sm">🔀 Shuffle</button>
+            <button id="btn-reset-cards" class="btn btn-sm">↺ Reset progress</button>
+          </div>
+          <div id="card-area" class="card-area">
+            <div id="card3d" class="card3d" tabindex="0" role="button" title="Click to flip">
+              <div class="card-face card-front">
+                <div class="card-tag" id="card-tag-front">Term</div>
+                <div class="card-text" id="card-front-text"></div>
+                <div class="card-hint">click to flip</div>
+              </div>
+              <div class="card-face card-back">
+                <div class="card-tag" id="card-tag-back">Meaning</div>
+                <div class="card-text" id="card-back-text"></div>
+                <div class="card-hint">click to flip back</div>
+              </div>
+            </div>
+          </div>
+          <div id="card-done" class="empty-state" hidden>
+            <div class="es-icon">🎉</div>
+            <p id="card-done-text">Deck finished!</p>
+            <button id="btn-cards-again" class="btn btn-primary">Review again</button>
+          </div>
+          <div class="card-controls no-print">
+            <button id="btn-prev-card" class="btn">← Prev</button>
+            <button id="btn-again-card" class="btn btn-warn">🔁 Review again</button>
+            <button id="btn-known-card" class="btn btn-ok">✓ Got it</button>
+            <button id="btn-next-card" class="btn">Next →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quiz panel -->
+      <div id="panel-quiz" class="tab-panel" hidden>
+        <div id="quiz-empty" class="empty-state" hidden>
+          <div class="es-icon">❓</div>
+          <p>No quiz yet.</p>
+          <button id="btn-rebuild-quiz" class="btn btn-primary">Build quiz from notes</button>
+        </div>
+        <div id="quiz-ui">
+          <div class="quiz-toolbar no-print">
+            <span id="quiz-score" class="toolbar-hint"></span>
+            <span class="spacer"></span>
+            <button id="btn-quiz-retry" class="btn btn-sm">↺ Retry</button>
+          </div>
+          <div id="quiz-area"></div>
+          <div class="quiz-controls no-print">
+            <button id="btn-quiz-submit" class="btn btn-primary btn-lg">Check answers</button>
+          </div>
+          <div id="quiz-result" class="quiz-result" hidden></div>
+        </div>
+      </div>
+
+      <!-- Source panel -->
+      <div id="panel-source" class="tab-panel" hidden>
+        <div class="source-tools no-print">
+          <input id="source-search" type="search" placeholder="Search in chapter…">
+          <span id="source-count" class="toolbar-hint"></span>
+          <span class="spacer"></span>
+          <span class="toolbar-hint">Tip: select any text to add it to your notes</span>
+        </div>
+        <div id="source-body" class="source-body"></div>
+        <button id="btn-add-highlight" class="btn btn-primary btn-sm" hidden>＋ Add to notes</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ============ GENERATION PROGRESS OVERLAY ============ -->
+<div id="progress-overlay" class="overlay" hidden>
+  <div class="overlay-card progress-card">
+    <h3 id="progress-stage-label">Preparing…</h3>
+    <ul id="progress-steps" class="progress-steps">
+      <li data-step="prepare">Preparing text</li>
+      <li data-step="analyze">Analyzing &amp; chunking</li>
+      <li data-step="compose">Composing notes</li>
+      <li data-step="verify">Integrity check</li>
+    </ul>
+    <div class="progress-track"><div id="progress-bar-fill" class="progress-bar-fill"></div></div>
+    <div id="progress-sub" class="progress-sub"></div>
+    <pre id="progress-preview" class="progress-preview" hidden></pre>
+    <button id="btn-cancel-gen" class="btn" hidden>✕ Cancel</button>
+  </div>
+</div>
+
+<!-- ============ SETTINGS MODAL ============ -->
+<div id="modal-settings" class="overlay" hidden>
+  <div class="overlay-card settings-card">
+    <div class="modal-head">
+      <h3>Settings</h3>
+      <button id="btn-close-settings" class="icon-btn" title="Close">✕</button>
+    </div>
+
+    <div class="settings-section">
+      <h4>Appearance</h4>
+      <label class="set-row"><span>Theme</span>
+        <select id="set-theme">
+          <option value="auto" selected>Auto (system)</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="settings-section">
+      <h4>🤖 AI engine <em class="opt-optional">(optional — bring your own key)</em></h4>
+      <p class="settings-note">Use any OpenAI-compatible API (OpenAI, Groq, Together, Ollama…). Your key is stored <strong>only in this browser</strong> and sent directly to the endpoint you choose. The Instant engine needs none of this.</p>
+      <label class="set-row"><span>Base URL</span>
+        <input id="set-ai-base" type="text" placeholder="https://api.openai.com/v1">
+      </label>
+      <label class="set-row"><span>API key</span>
+        <span class="key-wrap">
+          <input id="set-ai-key" type="password" placeholder="sk-…" autocomplete="off">
+          <button id="set-ai-key-toggle" class="btn btn-sm" type="button">👁</button>
+        </span>
+      </label>
+      <label class="set-row"><span>Model</span>
+        <input id="set-ai-model" type="text" placeholder="gpt-4o-mini / llama3.1 …">
+      </label>
+      <label class="set-row"><span>Temperature <span id="set-ai-temp-val">0.3</span></span>
+        <input id="set-ai-temp" type="range" min="0" max="1" step="0.1" value="0.3">
+      </label>
+      <div class="set-row">
+        <span></span>
+        <span class="key-wrap">
+          <button id="btn-test-ai" class="btn btn-sm">🔌 Test connection</button>
+          <span id="ai-test-result" class="test-result"></span>
+        </span>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h4>⌨️ Shortcuts</h4>
+      <p class="settings-note"><kbd>Ctrl/⌘</kbd>+<kbd>Enter</kbd> generate · <kbd>Ctrl/⌘</kbd>+<kbd>E</kbd> edit notes · <kbd>Ctrl/⌘</kbd>+<kbd>P</kbd> print · <kbd>Space</kbd> flip flashcard</p>
+    </div>
+
+    <div class="settings-section danger-zone">
+      <h4>Danger zone</h4>
+      <button id="btn-clear-data" class="btn btn-danger btn-sm">🗑 Delete all saved documents</button>
+    </div>
+
+    <div class="settings-section">
+      <h4>What Chapterly fixes</h4>
+      <ul class="fix-list">
+        <li><strong>No signup / paywall</strong> — the Instant engine works fully offline, forever.</li>
+        <li><strong>No hallucinations</strong> — extractive notes use your text verbatim; AI output is integrity-checked sentence by sentence.</li>
+        <li><strong>No truncation</strong> — long chapters are chunked and merged; the ending is never silently dropped.</li>
+        <li><strong>Never lose work</strong> — autosave to local storage; notes stay editable.</li>
+        <li><strong>Real ownership</strong> — export Markdown, PDF and Anki CSV anytime.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CONFIRM MODAL ============ -->
+<div id="modal-confirm" class="overlay" hidden>
+  <div class="overlay-card confirm-card">
+    <h3 id="confirm-title">Are you sure?</h3>
+    <p id="confirm-text"></p>
+    <div class="confirm-actions">
+      <button id="btn-confirm-no" class="btn">Cancel</button>
+      <button id="btn-confirm-yes" class="btn btn-danger">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div id="toasts" aria-live="polite"></div>
+
+<footer class="app-foot">Chapterly · runs 100% in your browser · text never leaves this page unless you enable the AI engine</footer>
+
+<script src="js/util.js" defer></script>
+<script src="js/md.js" defer></script>
+<script src="js/data.js" defer></script>
+<script src="js/engine.js" defer></script>
+<script src="js/ai.js" defer></script>
+<script src="js/readers.js" defer></script>
+<script src="js/app.js" defer></script>
+</body>
+</html>
