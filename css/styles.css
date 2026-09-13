@@ -90,6 +90,40 @@ input,textarea,select{font-family:inherit;color:inherit}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:8px}
 ::-webkit-scrollbar-thumb:hover{background:var(--muted)}
 
+/* slim, inset scrollbars inside rounded panels — keeps the thumb
+   clear of the border-radius so it never pokes out of a corner */
+.overlay-card::-webkit-scrollbar,
+.source-body::-webkit-scrollbar,
+.progress-preview::-webkit-scrollbar,
+#notes-editor::-webkit-scrollbar,
+#doc-list::-webkit-scrollbar,
+textarea::-webkit-scrollbar{width:8px;height:8px}
+.overlay-card::-webkit-scrollbar-track,
+.source-body::-webkit-scrollbar-track,
+.progress-preview::-webkit-scrollbar-track,
+#notes-editor::-webkit-scrollbar-track,
+#doc-list::-webkit-scrollbar-track,
+textarea::-webkit-scrollbar-track{background:transparent;margin:14px 2px}
+.overlay-card::-webkit-scrollbar-thumb,
+.source-body::-webkit-scrollbar-thumb,
+.progress-preview::-webkit-scrollbar-thumb,
+#notes-editor::-webkit-scrollbar-thumb,
+#doc-list::-webkit-scrollbar-thumb,
+textarea::-webkit-scrollbar-thumb{
+  background:color-mix(in srgb,var(--muted) 40%,transparent);
+  border-radius:99px;background-clip:padding-box;border:2px solid transparent;
+}
+.overlay-card::-webkit-scrollbar-thumb:hover,
+.source-body::-webkit-scrollbar-thumb:hover,
+.progress-preview::-webkit-scrollbar-thumb:hover,
+#notes-editor::-webkit-scrollbar-thumb:hover,
+#doc-list::-webkit-scrollbar-thumb:hover,
+textarea::-webkit-scrollbar-thumb:hover{background:color-mix(in srgb,var(--muted) 65%,transparent);background-clip:padding-box}
+.overlay-card,.source-body,.progress-preview,#notes-editor,#doc-list,textarea{
+  scrollbar-width:thin;
+  scrollbar-color:color-mix(in srgb,var(--muted) 40%,transparent) transparent;
+}
+
 /* ================= topbar: floating pill ================= */
 .topbar{
   position:sticky;top:10px;z-index:50;
